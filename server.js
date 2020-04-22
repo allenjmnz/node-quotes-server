@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 
-const { quotes } = require("./data");
-const { getRandomElement } = require("./utils");
+let { quotes } = require("./data");
+const { getRandomElement, higherIdQuote, createId } = require("./utils");
 
 const PORT = process.env.PORT || 4001;
 
@@ -36,6 +36,7 @@ apiRouter.post("/", (req, res, next) => {
   const { quote, person } = req.query;
   if (quote && person) {
     const quoteObj = {
+      id: createId(quotes, quote),
       quote,
       person
     };
@@ -43,5 +44,27 @@ apiRouter.post("/", (req, res, next) => {
     res.status(201).send({ quote: quoteObj });
   } else {
     res.status(404).send();
+  }
+});
+
+apiRouter.put("/", (req, res, next) => {
+  const { id, quote, person } = req.query;
+  if (quote && person && id) {
+    const quoteObj = {
+      id: parseInt(id),
+      quote,
+      person
+    };
+    quotes = quotes.map(quote => (quote.id === quoteObj.id ? quoteObj : quote));
+    res.status(200).send({ quote: quoteObj });
+  } else {
+    res.status(404).send();
+  }
+});
+
+apiRouter.get("/:id", (req, res, next) => {
+  const matchingQuote = quotes.find(quote => quote.id == req.params.id);
+  if (matchingQuote) {
+    res.send({ quote: matchingQuote });
   }
 });
